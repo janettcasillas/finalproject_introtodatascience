@@ -1,0 +1,43 @@
+---
+title: "final_project"
+author: "Janett Casillas"
+date: "3/8/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+#knitr::opts_chunk$set(echo = TRUE, error=TRUE, message=FALSE, warning=FALSE)
+```
+
+```{r libraries}
+library(tidyverse)     
+library(lubridate)     
+library(ggthemes)      
+library(janitor)       
+theme_set(theme_minimal()) 
+
+```
+
+
+```{r}
+netflix <- read.csv(file = "netflix_titles.csv")
+
+```
+
+## Is it just me or is Netflix getting worse? 
+
+
+
+```{r}
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
