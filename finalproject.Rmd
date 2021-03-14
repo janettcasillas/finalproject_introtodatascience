@@ -1,43 +1,250 @@
 ---
-title: "final_project"
+title: "Netflix and the Rise of Streaming Services"
 author: "Janett Casillas"
 date: "3/8/2021"
-output: html_document
+output: 
+  html_document:
+  theme: sandstone
 ---
 
 ```{r setup, include=FALSE}
-#knitr::opts_chunk$set(echo = TRUE, error=TRUE, message=FALSE, warning=FALSE)
+knitr::opts_chunk$set(echo = TRUE, error=TRUE, message=FALSE, warning=FALSE)
 ```
 
-```{r libraries}
-library(tidyverse)     
-library(lubridate)     
-library(ggthemes)      
-library(janitor)       
+```{r libraries, echo=FALSE}
+library(tidyverse)
+library(lubridate)
+library(ggthemes)
+library(gganimate)
+library(janitor)
 theme_set(theme_minimal()) 
 
 ```
 
 
-```{r}
+```{r, echo=FALSE}
 netflix <- read.csv(file = "netflix_titles.csv")
 
 ```
 
-## Is it just me or is Netflix getting worse? 
+## Is the amount of US Netflix originals dominating the site? 
+
+When it was announced that The Office was set to leave Netflix at the end of 2020, many articles came out speculating that Netflix was going to lose millions in revenue from subscribers who would cancel their subscriptions as a result. An article published in [InMyArea.com](https://www.inmyarea.com/research/netflix-losing-subscribers-when-the-office-leaves), a website that both provides information about locally available internet, TV, and network providers, and conducts research regarding usage of such services, estimated that based on survey findings, up to 10% of Netflix users, or about 6 million people, would cancel their memberships when The Office left Netflix. The Office leaving Netflix was a result of NBCUniversal buying the rights for the show and streaming it on its relatively-new platform, Peacock. This is the latest example of a major fan-favorite TV show leaving the platform, coming in a year after Friends was taken off and moved to HBOMax and other services, if you paid for the premium version of that subscription. 
+
+The Office fans after 12/31/2020: 
+![](michael_scott.gif) 
 
 
+The loss of these two shows from Netflix goes along with the recent rise of streaming services, which according to a [New York Times article](https://www.nytimes.com/2019/11/18/business/media/streaming-hollywood-revolution.html) published in 2019, is the "Hollywood" shift of our generation. Netflix was the pioneer of this shift when, in 2007, it began to allow users to stream content from their accounts. This disrupted the traditional cable that dominated at the time. For the low price of 8 dollars a month, compared to the prices of cable TV providers that ran in the hundreds, it served as an alternative way for those who could not afford or were uninterested in paying the full amount for cable TV, to watch their favorite shows and movies. Over a decade later, Netflix is still the dominant streaming service on the market, but its competition is growing. Many more media companies have adapted to the streaming model, and have since then released platforms of their own that feature their content exclusively, such as Disney+. What this has meant for Netflix is the loss of contracts and rights to stream content from specific companies, with the latest major blow being the aforementioned The Office. Now, instead of consumers turning to Netflix as an alternative to cable TV, they are having to decide which streaming services to pay for by looking at which ones have most of the content that they would like to watch.
 
-```{r}
+While it is too still early in the year to analyze the effects of The Office leaving the platform, as a long-time Netflix user myself, I have personally seen what I deem to be a decline in the quality of content available. My finally originally purchased it around 2011 when I was in middle school, and we paid the initial 8 dollars a month fee. As time has passed, I am seeing that more and more Netflix originals are dominating my feed, and I find myself taking longer to pick something to watch. One of the major problems I find with Netflix Originals is they often run for a couple of seasons before they are discontinued without an official ending or closure. If not that, a lot of my issues with this are purely personal preferences - the concepts of the shows are not as interesting to me as those of shows from other networks. Ultimately, I choose to watch reality TV shows, with the understanding that they are not going to be great - only entertaining enough. What is left for me is a streaming service that is over-saturated with original content that I am not interested in, for which I now pay over 14 dollars a month. Once quarantine is over, I will most likely cancel my subscription.
+
+## About the Project
+
+For this project, I was interested in looking at licensed content and Netflix originals over time. I used a dataset from [kaggle.com](https://www.kaggle.com/shivamb/netflix-shows) that consists of all of the movies and TV shows available on Netflix as of 2021. Interestingly, the publisher notes that since 2010, the number of TV shows has about tripled, while the number of movies has actually decreased, which is reflected in the graphs below. For my analysis, I decided to exclude all of the children's content available by filtering out the ratings for those, since that is a demographic with entirely different dynamics. I was interested in looking at data for the type of content that people paying for the service would watch. In the dataset, there is no variable that indicates whether the content is licensed or original. in order to determine that, I looked at whether the year it was added to Netflix matched the year it was released. If it did, it was a Netflix original, and if not it was licensed. Finally, I excluded data from 2021 since the data for this year is not complete. 
+
+## The Graphs
+
+In this choropleth map, I wanted to look a the percentage of content that was a Netflix original across the world in countries that have over 3 titles listed in the dataset. There is no evident spatial trend, however I did find it interesting to see that the amount of Netflix originals is about half of the total content in many of the countries. 
+
+```{r, echo=FALSE}
+world_map <- map_data("world") %>% fortify
+
+pct_orig_by_country = netflix %>% 
+  select(show_id, type, country, date_added, release_year, rating, listed_in) %>%
+  filter(!(rating %in% c("TV-Y", "TV-Y7", "G", "TV-G", "PG", "TV"))) %>%
+  separate_rows(country, sep = ",") %>%
+  filter(country != "") %>% 
+  mutate(country = ifelse(trimws(country) == "United States", "USA", trimws(country))) %>% 
+  mutate(year_added = year(parse_date_time(date_added, "%b %d, %Y"))) %>% 
+  mutate(netflix_original = (year_added == release_year)) %>%
+  filter(year_added != "2021") %>%
+  group_by(country, netflix_original) %>%
+  summarize(n = n()) %>%
+  mutate(pct_orig = n / sum(n)) %>%
+  filter(netflix_original & n > 3)
+
+ggplot() +
+  geom_map(data = pct_orig_by_country, map = world_map, aes(fill = pct_orig, map_id = country)) +
+  scale_fill_gradient(low = "#E6E8E6", high ="#DF2935") +
+  geom_map(data = world_map, map = world_map,
+           aes(x = long, y = lat, group = group, map_id=region),
+               fill = NA, colour = "#7f7f7f", size=0.5) + 
+  expand_limits(x = world_map$long, y = world_map$lat) + 
+  labs(title = "Percent of Netflix Originals in Netflix Content Across the World")+
+  theme_map()+
+  theme(legend.title = element_blank())
+```
+For some further analysis, I wanted to look at data for the top 15 countries that have the most content available on Netflix. As seen, the US still has over 3 times the amount of content as India, the country with the second-highest amount. 
+
+
+```{r, echo=FALSE}
+releases_by_country = netflix %>% 
+  separate_rows(country, sep = ",") %>% 
+  filter(country != "") %>% 
+  mutate(country = trimws(country)) %>% 
+ count(country) %>% 
+  slice_max(order_by = n, n = 15) 
+
+releases_by_country %>% 
+  ggplot(aes(x = n, y = fct_reorder(country, n), fill = country))+
+  geom_col()+ 
+  labs(x = "", y = "", title = "Top 15 Countries with the Most Netflix Content") +
+  scale_fill_manual(values = rep(c("#3772FF"), 15))+
+  theme_classic() +
+  theme(legend.position = "none",
+        panel.grid.major = element_line(color = "#E6E8E6"),
+        panel.grid.minor = element_line(color = "#E6E8E6"),
+        axis.text = element_text(color = "#080708"),
+        axis.line = element_line(color = "#E6E8E6"))
+```
+Despite the differences in the total number content available, it appears that overall all countries are experiencing a rise the proportion of content that is a Netflix original. In some places such as Mexico, it now comprises more than half of the total content. Other countries, such as Egypt and Turkey are beginning to see the first Netflix originals. 
+
+```{r, echo=FALSE}
+releases_by_country_chr = netflix %>% 
+  separate_rows(country, sep = ",") %>% 
+  filter(country != "") %>% 
+  mutate(country = trimws(country)) %>% 
+ count(country) %>% 
+  slice_max(order_by = n, n = 15) %>% 
+  pull(country)
+
+netflix %>% 
+  select(show_id, type, country, date_added, release_year, rating, listed_in) %>%
+  filter(!(rating %in% c("TV-Y", "TV-Y7", "G", "TV-G", "PG", "TV"))) %>%
+  separate_rows(country, sep = ",") %>%
+  filter(country != "") %>% 
+  mutate(country = trimws(country)) %>% 
+  filter(country %in% releases_by_country_chr) %>% 
+  mutate(year_added = year(parse_date_time(date_added, "%b %d, %Y"))) %>% 
+  mutate(netflix_original = (year_added == release_year)) %>%
+  filter(year_added != "2021") %>% 
+  group_by(year_added, netflix_original) %>% 
+  ggplot(aes(x = year_added, fill = netflix_original)) +
+           geom_bar()+
+  scale_fill_manual(values = c("#FDCA40", "#DF2935"), labels = c("Licensed Content", "Netflix Original"))+
+   #scale_fill_manual(values = c("#FDCA40", "#DF2935"), labels = c("Licensed Content", "Netflix Original"))
+  labs(title = "Netflix Originals vs. Licensed Content Across the Top 15 Countries", y = "", x ="")+
+  facet_wrap(vars(country), scales = "free") +
+  theme_minimal()+
+  theme(axis.text.x.bottom = element_blank(),
+        legend.title = element_blank(),
+        legend.position = "none")
+```
+Over the years, it is clear that both the number and overall proportion of Netflix originals is increasing. 
+  
+```{r, echo=FALSE}
+releases_by_country_chr = netflix %>% 
+  separate_rows(country, sep = ",") %>% 
+  filter(country != "") %>% 
+  mutate(country = trimws(country)) %>% 
+ count(country) %>% 
+  slice_max(order_by = n, n = 15) %>% 
+  pull(country)
+
+netflix %>% 
+  select(show_id, type, country, date_added, release_year, rating, listed_in) %>%
+  filter(!(rating %in% c("TV-Y", "TV-Y7", "G", "TV-G", "PG", "TV"))) %>%
+  separate_rows(country, sep = ",") %>%
+  filter(country != "") %>% 
+  mutate(country = trimws(country)) %>%
+  filter(country %in% releases_by_country_chr) %>% 
+  mutate(year_added = year(parse_date_time(date_added, "%b %d, %Y"))) %>% 
+  mutate(netflix_original = (year_added == release_year)) %>%
+  filter(year_added != "2021") %>% 
+  group_by(year_added, netflix_original) %>% 
+  ggplot(aes(y = country, fill = netflix_original)) +
+           geom_bar()+
+  scale_fill_manual(values = c("#FDCA40", "#DF2935"))+
+   #scale_fill_manual(values = c("#FDCA40", "#DF2935"), labels = c("Licensed Content", "Netflix Original"))
+  labs(title = "Netflix Originals vs. Licensed Content Across the Top 15 Countries", y = "", x ="")+
+  theme_minimal()+
+  theme(#axis.text.x.bottom = element_blank(),
+        legend.title = element_blank(),
+        legend.position = "none") +
+  transition_time(year_added)
 
 ```
+As mentioned earlier, the publisher of the dataset noted that since 2010, the number of TV shows had tripled, while the number of movies had decreased. For this reason, I decided to split the data by movies and TV shows. This revealed that most of the increase in Netflix originals came from TV shows, and that in movies licensed content was still the majority. 
 
-## Including Plots
+```{r, echo=FALSE}
+releases_by_country_chr = netflix %>% 
+  separate_rows(country, sep = ",") %>% 
+  filter(country != "") %>% 
+  mutate(country = trimws(country)) %>% 
+ count(country) %>% 
+  slice_max(order_by = n, n = 15) %>% 
+  pull(country)
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+netflix %>% 
+  select(show_id, type, country, date_added, release_year, rating, listed_in) %>%
+  filter(!(rating %in% c("TV-Y", "TV-Y7", "G", "TV-G", "PG", "TV"))) %>%
+  separate_rows(country, sep = ",") %>%
+  filter(country != "") %>% 
+  mutate(country = trimws(country)) %>%
+  filter(country %in% releases_by_country_chr) %>% 
+  mutate(year_added = year(parse_date_time(date_added, "%b %d, %Y"))) %>% 
+  mutate(netflix_original = (year_added == release_year)) %>%
+  filter(year_added != "2021") %>% 
+  group_by(year_added, netflix_original) %>% 
+  ggplot(aes(y = country, fill = netflix_original)) +
+           geom_bar()+
+  facet_wrap(vars(type)) +
+  scale_fill_manual(values = c("#FDCA40", "#DF2935"), labels = c("Licensed Content", "Netflix Original")) +
+  labs(title = "Netflix Originals vs. Licensed Content Across the Top 15 Countries", y = "", x ="")+
+  theme_minimal()+
+  theme(#axis.text.x.bottom = element_blank(),
+        legend.title = element_blank(),
+        legend.position = "none") +
+  transition_time(year_added)
+```
+Going back to the US since that is the content that I watch, as of 2020, almost half of the content rated for teens and up is a Netflix original. This goes along with my personal observations from having Netflix for about 10 years now - over half of the shows on the platform are originals. Meanwhile, it seems that the number of available movies is on the decline. 
+  
+```{r, echo=FALSE}
+netflix %>% 
+  select(show_id, type, country, date_added, release_year, rating, listed_in) %>% 
+  filter(grepl("United States", country)) %>% 
+  filter(!(rating %in% c("TV-Y", "TV-Y7", "G", "TV-G", "PG", "TV"))) %>%
+  mutate(year_added = year(parse_date_time(date_added, "%b %d, %Y"))) %>% 
+  mutate(netflix_original = (year_added == release_year)) %>% 
+  filter(year_added != "2021") %>% 
+  group_by(year_added, netflix_original) %>% 
+  ggplot(aes(x = year_added, fill = netflix_original)) +
+           geom_bar() +
+  scale_fill_manual(values = c("#FDCA40", "#DF2935"), labels = c("Licensed Content", "Netflix Original")) +
+  labs(title = "US Netflix Originals vs. Licensed Content Over Time", y = "", x = "") +
+  theme_minimal()+
+  theme(legend.title = element_blank())
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r, echo=FALSE}
+netflix %>% 
+  select(show_id, type, country, date_added, release_year, rating, listed_in) %>%
+  filter(!(rating %in% c("TV-Y", "TV-Y7", "G", "TV-G", "PG", "TV"))) %>%
+  filter(grepl("United States", country)) %>% 
+  mutate(year_added = year(parse_date_time(date_added, "%b %d, %Y"))) %>% 
+  mutate(netflix_original = (year_added == release_year)) %>% 
+  filter(year_added != "2021") %>% 
+  group_by(year_added, netflix_original) %>% 
+  ggplot(aes(x = year_added, fill = netflix_original)) +
+           geom_bar() +
+  facet_wrap(vars(type)) +
+  #scale_fill_discrete(name = "", labels = c("Licensed Content", "Netflix Original"))+
+  scale_fill_manual(values = c("#FDCA40", "#DF2935"), labels = c("Licensed Content", "Netflix Original")) +
+  labs(title = "US Netflix Originals vs. Licensed Content Over Time by Type", y = "", x = "") +
+  theme_minimal()+
+  theme(legend.title = element_blank())
+  
+```
+
+## Conclusion
+
+Overall, doing this project allowed me to confirm the observations that I had been making recently. Though not necessarily through fault of their own, Netflix has been losing more and more content to media companies and their competing streaming platforms. It makes sense that Netflix is focusing on its TV shows, as from the start the platform is known for having binge-worthy shows. Only now, they are losing their ability to license them, and to keep up they are ramping up the production of original TV shows. It is unfortunate that even though Netflix began as a cheap alternative to cable TV, it along with other streaming services have become the new cable TV with people having to pay cable TV prices for multiple subscriptions. Personally, once I graduate and lose my student discounts, I will likely cancel everything and simply purchase or rent shows and movies that I like to watch instead of paying for these multiple subscriptions that I do not use often.  
+
+## Sources 
+
+https://www.kaggle.com/shivamb/netflix-shows
+https://www.inmyarea.com/research/netflix-losing-subscribers-when-the-office-leaves
+https://www.nytimes.com/2019/11/18/business/media/streaming-hollywood-revolution.html
+
