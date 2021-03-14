@@ -32,6 +32,7 @@ netflix <- read.csv(file = "netflix_titles.csv")
 When it was announced that The Office was set to leave Netflix at the end of 2020, many articles came out speculating that Netflix was going to lose millions in revenue from subscribers who would cancel their subscriptions as a result. An article published in [InMyArea.com](https://www.inmyarea.com/research/netflix-losing-subscribers-when-the-office-leaves), a website that both provides information about locally available internet, TV, and network providers, and conducts research regarding usage of such services, estimated that based on survey findings, up to 10% of Netflix users, or about 6 million people, would cancel their memberships when The Office left Netflix. The Office leaving Netflix was a result of NBCUniversal buying the rights for the show and streaming it on its relatively-new platform, Peacock. This is the latest example of a major fan-favorite TV show leaving the platform, coming in a year after Friends was taken off and moved to HBOMax and other services, if you paid for the premium version of that subscription. 
 
 The Office fans after 12/31/2020: 
+
 ![](michael_scott.gif) 
 
 
@@ -248,3 +249,4 @@ https://www.kaggle.com/shivamb/netflix-shows
 https://www.inmyarea.com/research/netflix-losing-subscribers-when-the-office-leaves
 https://www.nytimes.com/2019/11/18/business/media/streaming-hollywood-revolution.html
 
+[GitHub Link](https://github.com/janettcasillas/finalproject_introtodatascience/blob/main/finalproject.Rmd)
