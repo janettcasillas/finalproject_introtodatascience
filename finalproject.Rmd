@@ -2,9 +2,10 @@
 title: "Netflix and the Rise of Streaming Services"
 author: "Janett Casillas"
 date: "3/8/2021"
-output: 
-  html_document:
+output:
+  pdf_document: default
   theme: sandstone
+  html_document: null
 ---
 
 ```{r setup, include=FALSE}
@@ -27,7 +28,7 @@ netflix <- read.csv(file = "netflix_titles.csv")
 
 ```
 
-## Is the amount of US Netflix originals dominating the site? 
+## Are Netflix Originals Dominating the Site? 
 
 When it was announced that The Office was set to leave Netflix at the end of 2020, many articles came out speculating that Netflix was going to lose millions in revenue from subscribers who would cancel their subscriptions as a result. An article published in [InMyArea.com](https://www.inmyarea.com/research/netflix-losing-subscribers-when-the-office-leaves), a website that both provides information about locally available internet, TV, and network providers, and conducts research regarding usage of such services, estimated that based on survey findings, up to 10% of Netflix users, or about 6 million people, would cancel their memberships when The Office left Netflix. The Office leaving Netflix was a result of NBCUniversal buying the rights for the show and streaming it on its relatively-new platform, Peacock. This is the latest example of a major fan-favorite TV show leaving the platform, coming in a year after Friends was taken off and moved to HBOMax and other services, if you paid for the premium version of that subscription. 
 
@@ -76,6 +77,7 @@ ggplot() +
   theme_map()+
   theme(legend.title = element_blank())
 ```
+
 For some further analysis, I wanted to look at data for the top 15 countries that have the most content available on Netflix. As seen, the US still has over 3 times the amount of content as India, the country with the second-highest amount. 
 
 
@@ -99,6 +101,7 @@ releases_by_country %>%
         axis.text = element_text(color = "#080708"),
         axis.line = element_line(color = "#E6E8E6"))
 ```
+
 Despite the differences in the total number content available, it appears that overall all countries are experiencing a rise the proportion of content that is a Netflix original. In some places such as Mexico, it now comprises more than half of the total content. Other countries, such as Egypt and Turkey are beginning to see the first Netflix originals. 
 
 ```{r, echo=FALSE}
@@ -132,6 +135,7 @@ netflix %>%
         legend.title = element_blank(),
         legend.position = "none")
 ```
+
 Over the years, it is clear that both the number and overall proportion of Netflix originals is increasing. 
   
 ```{r, echo=FALSE}
